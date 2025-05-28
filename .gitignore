@@ -1,0 +1,22 @@
+Azure_Infrastructure/.DS_Store
+
+# Terraform files
+
+#root
+.terraform
+.terraform/
+terraform.tfstate
+terraform.tfstate.*
+.terraform.lock.hcl
+*.tfstate.backup
+.tfplan
+.terraform*
+
+# Visual Studio Code settings
+.vscode/
+
+# Terraform CLI config
+.terraformrc
+.terraform/
+.DS_Store
+.idea/

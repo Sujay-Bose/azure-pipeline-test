@@ -1,0 +1,106 @@
+pool:
+  vmImage: 'ubuntu-latest'
+
+jobs:
+- job: Terraform_Plan
+  continueOnError: false
+  steps:
+  - bash: ls $(System.DefaultWorkingDirectory)
+    displayName: 'bash command to list working directory'
+  
+  - task: TerraformInstaller@1
+    displayName: "Terraform_Upgrade"
+    inputs:
+      terraformVersion: 'latest'
+
+  - task: TerraformTaskV4@4
+    displayName: Terraform_Init
+    inputs:
+      provider: 'azurerm'
+      command: 'init'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+      commandOptions: '-reconfigure'
+      backendServiceArm: 'AzureDevOps'
+      backendAzureRmResourceGroupName: 'rg-iac-terraform'
+      backendAzureRmStorageAccountName: 'saiacterraformsujay'
+      backendAzureRmContainerName: 'terraform-backend'
+      backendAzureRmKey: 'terraform.tfstate'
+
+  - task: TerraformTaskV4@4
+    displayName: Terraform_Validate
+    inputs:
+      provider: 'azurerm'
+      command: 'validate'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+  
+  - task: TerraformTaskV4@4
+    displayName: Terraform_Plan
+    inputs:
+      provider: 'azurerm'
+      command: 'plan'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+      commandOptions: '-out=tfplan'
+      environmentServiceNameAzureRM: 'AzureDevOps'
+
+  - task: PublishPipelineArtifact@1
+    displayName: Upload_Terraform_Plan_File
+    inputs:
+      targetPath: '$(System.DefaultWorkingDirectory)/tfplan'
+      artifact: 'tfplan'
+      publishLocation: 'pipeline'
+
+- job: Manual_Approval_For_Apply
+  displayName: "Manual_Approval"
+  dependsOn: Terraform_Plan
+  continueOnError: false
+  pool: server    
+  timeoutInMinutes: 120
+  steps:   
+  - task: ManualValidation@0
+    timeoutInMinutes: 120
+    inputs:
+      instructions: 'Please validate the terraform plan and click on resume to apply'
+      onTimeout: 'reject'
+
+- job: Terraform_Apply
+  continueOnError: false
+  dependsOn: Manual_Approval_For_Apply
+  displayName: "Terraform Apply"
+  steps:
+  - bash: ls $(System.DefaultWorkingDirectory)
+    displayName: 'bash command to list working directory'
+  
+  - task: TerraformInstaller@1
+    displayName: "Terraform_Upgrade"
+    inputs:
+      terraformVersion: 'latest'
+
+  - task: TerraformTaskV4@4
+    displayName: Terraform_Init
+    inputs:
+      provider: 'azurerm'
+      command: 'init'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+      commandOptions: '-reconfigure'
+      backendServiceArm: 'AzureDevOps'
+      backendAzureRmResourceGroupName: 'rg-iac-terraform'
+      backendAzureRmStorageAccountName: 'saiacterraformsujay'
+      backendAzureRmContainerName: 'terraform-backend'
+      backendAzureRmKey: 'terraform.tfstate'
+
+  - task: DownloadPipelineArtifact@2
+    displayName: Download_Terraform_Plan_File
+    inputs:
+      buildType: 'current'
+      artifactName: 'tfplan'
+      itemPattern:
+      targetPath: '$(System.DefaultWorkingDirectory)'
+
+  - task: TerraformTaskV4@4
+    displayName: Terraform_Apply
+    inputs:
+      provider: 'azurerm'
+      command: 'apply'
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+      commandOptions: 'tfplan'
+      environmentServiceNameAzureRM: 'AzureDevOps'
