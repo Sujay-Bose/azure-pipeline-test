@@ -100,5 +100,5 @@ jobs:
     inputs:
       provider: 'azurerm'
       command: 'apply'
-      commandOptions: 'tfplan -var-file=$(var-file)'
+      commandOptions: 'tfplan'
       environmentServiceNameAzureRM: 'AzureDevOps'
