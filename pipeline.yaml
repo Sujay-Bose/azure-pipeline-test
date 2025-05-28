@@ -38,7 +38,7 @@ jobs:
     inputs:
       provider: 'azurerm'
       command: 'plan'
-      commandOptions: '-out=tfplan -var-file=terraform.tfvars'
+      commandOptions: '-out=tfplan -var-file=$(var-file)'
       environmentServiceNameAzureRM: 'AzureDevOps'
 
   - task: PublishPipelineArtifact@1
@@ -100,5 +100,5 @@ jobs:
     inputs:
       provider: 'azurerm'
       command: 'apply'
-      commandOptions: 'tfplan -var-file=terraform.tfvars'
+      commandOptions: 'tfplan -var-file=$(var-file)'
       environmentServiceNameAzureRM: 'AzureDevOps'
