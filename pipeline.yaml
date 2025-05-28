@@ -38,8 +38,7 @@ jobs:
     inputs:
       provider: 'azurerm'
       command: 'plan'
-      workingDirectory: '$(System.DefaultWorkingDirectory)'
-      commandOptions: '-out=tfplan'
+      commandOptions: '-out=tfplan -var-file=terraform.tfvars'
       environmentServiceNameAzureRM: 'AzureDevOps'
 
   - task: PublishPipelineArtifact@1
@@ -101,6 +100,5 @@ jobs:
     inputs:
       provider: 'azurerm'
       command: 'apply'
-      workingDirectory: '$(System.DefaultWorkingDirectory)'
-      commandOptions: 'tfplan'
+      commandOptions: 'tfplan -var-file=terraform.tfvars'
       environmentServiceNameAzureRM: 'AzureDevOps'
