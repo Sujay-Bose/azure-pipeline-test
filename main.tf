@@ -3,7 +3,7 @@ resource "azurerm_resource_group" "resource_group" {
   location = "East US"
 }
 
-resource "azuread_group" "owner_group" {
+resource "azuread_group" "dl" {
   display_name     = var.dl_display_name 
   types            = ["Unified"]
   security_enabled = true
